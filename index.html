@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Escolar Interactivo</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        body { background-color: #f1f5f9; color: #1e293b; padding-bottom: 50px; font-size: 12px; }
+        
+        header { background-color: #0f172a; color: white; padding: 15px 20px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .header-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .btn-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        button { border: none; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: #2563eb; color: white; }
+        .btn-primary:hover { background-color: #1d4ed8; }
+        .btn-success { background-color: #059669; color: white; }
+        .btn-success:hover { background-color: #047857; }
+        .btn-secondary { background-color: #334155; color: #cbd5e1; }
+        .btn-secondary:hover { background-color: #475569; }
+        .btn-toggle { background-color: #475569; color: #f8fafc; border: 1px solid #64748b; }
+        .btn-toggle.active { background-color: #d97706; color: white; border-color: #b45309; }
+        
+        .view-btn-group { display: flex; background-color: #1e293b; border-radius: 6px; padding: 2px; border: 1px solid #475569; }
+        .view-btn { background: transparent; color: #94a3b8; padding: 6px 12px; border-radius: 4px; font-size: 11px; }
+        .view-btn.active { background-color: #2563eb; color: white; }
+
+        main { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+
+        /* Filtros */
+        .filters-panel { background: white; padding: 12px 18px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .filters-title { font-weight: 700; color: #64748b; font-size: 11px; text-transform: uppercase; }
+        .filters-group { display: flex; flex-wrap: wrap; gap: 10px; }
+        .filter-label { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; padding: 5px 10px; border-radius: 6px; cursor: pointer; border: 1px solid; }
+        .f-eventos { background-color: #ffe4e6; color: #9f1239; border-color: #fecdd3; }
+        .f-tareas { background-color: #fef3c7; color: #92400e; border-color: #fde68a; }
+        .f-pruebas { background-color: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+        .f-iv { background-color: #d1fae5; color: #064e3b; border-color: #a7f3d0; }
+
+        /* Navegación Semanal */
+        .week-nav { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px 18px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 20px; }
+        .week-title { font-size: 14px; font-weight: 700; color: #0f172a; }
+
+        /* Meses / Cuadrícula */
+        .month-card { background: white; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 25px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .month-header { background-color: #1e293b; color: white; padding: 10px 18px; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+        
+        .grid-header { display: grid; grid-template-columns: repeat(7, 1fr); background-color: #f8fafc; border-bottom: 1px solid #cbd5e1; font-weight: 700; text-align: center; color: #475569; font-size: 11px; text-transform: uppercase; padding: 6px 0; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+
+        /* Ocultar fin de semana */
+        .hide-weekends .grid-header { grid-template-columns: repeat(5, 1fr); }
+        .hide-weekends .calendar-grid { grid-template-columns: repeat(5, 1fr); }
+        .hide-weekends .weekday-sat,
+        .hide-weekends .weekday-sun,
+        .hide-weekends .day-sat,
+        .hide-weekends .day-sun { display: none !important; }
+        
+        .day-cell { background-color: white; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; min-height: 115px; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+        .day-cell:nth-child(7n) { border-right: none; }
+        .day-cell.empty { background-color: #f8fafc; }
+        .day-num { font-weight: 700; color: #334155; font-size: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        
+        .add-btn { background: #e2e8f0; color: #334155; width: 18px; height: 18px; border-radius: 50%; border: none; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .add-btn:hover { background: #cbd5e1; }
+
+        .events-list { display: flex; flex-direction: column; gap: 4px; }
+        
+        /* Eventos y Botón Eliminar Permanente */
+        .event-tag { padding: 4px 22px 4px 6px; border-radius: 4px; font-size: 10.5px; line-height: 1.25; border-left: 3px solid; position: relative; word-wrap: break-word; }
+        .del-btn { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.12); color: #0f172a; border: none; border-radius: 50%; width: 15px; height: 15px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .del-btn:hover { background: #ef4444; color: white; }
+
+        .tag-eventos { background-color: #ffe4e6; color: #881337; border-left-color: #e11d48; }
+        .tag-tareas { background-color: #fef3c7; color: #92400e; border-left-color: #d97706; }
+        .tag-pruebas { background-color: #dbeafe; color: #1e3a8a; border-left-color: #2563eb; }
+        .tag-iv { background-color: #d1fae5; color: #064e3b; border-left-color: #059669; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(2px); z-index: 200; align-items: center; justify-content: center; padding: 15px; }
+        .modal-content { background: white; border-radius: 10px; width: 100%; max-width: 420px; padding: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 8px 10px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .month-card { page-break-inside: avoid; border: 1px solid #94a3b8 !important; box-shadow: none; margin-bottom: 20px; }
+            .add-btn, .del-btn { display: none !important; }
+            .day-cell { min-height: 85px; }
+        }
+    </style>
+</head>
+<body class="hide-weekends">
+
+    <header class="no-print">
+        <div class="header-container">
+            <div>
+                <h1 style="font-size: 18px; font-weight: 700;">📅 Calendario Escolar Interactivo</h1>
+                <p style="font-size: 11px; color: #94a3b8;">Planificación oficial de fin de año con horarios detallados</p>
+            </div>
+            <div class="btn-group">
+                <div class="view-btn-group">
+                    <button id="btn-view-month" onclick="setViewMode('month')" class="view-btn active">📅 Meses</button>
+                    <button id="btn-view-week" onclick="setViewMode('week')" class="view-btn">📆 Semanal</button>
+                </div>
+                <button id="toggle-weekend-btn" onclick="toggleWeekends()" class="btn-toggle active">👁️ Mostrar Sáb/Dom</button>
+                <button onclick="openModal()" class="btn-success">+ Nueva Actividad</button>
+                <button onclick="window.print()" class="btn-primary">Imprimir / PDF</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="filters-panel no-print">
+            <div class="filters-title">Filtros por Tema:</div>
+            <div class="filters-group">
+                <label class="filter-label f-eventos">
+                    <input type="checkbox" checked value="eventos" onchange="renderCalendar()"> 🔴 Eventos 3er Trimestre
+                </label>
+                <label class="filter-label f-tareas">
+                    <input type="checkbox" checked value="tareas" onchange="renderCalendar()"> 🟠 Tareas Especiales
+                </label>
+                <label class="filter-label f-pruebas">
+                    <input type="checkbox" checked value="pruebas" onchange="renderCalendar()"> 🔵 Pruebas Finales (7°-III°)
+                </label>
+                <label class="filter-label f-iv">
+                    <input type="checkbox" checked value="iv" onchange="renderCalendar()"> 🟢 Plan Finalización IV°
+                </label>
+            </div>
+        </section>
+
+        <!-- Navegación Semanal -->
+        <div id="week-nav" class="week-nav no-print" style="display: none;">
+            <button onclick="changeWeek(-1)" class="btn-secondary">◄ Semana Anterior</button>
+            <div id="week-title" class="week-title">Semana del 19 al 23 de Octubre</div>
+            <button onclick="changeWeek(1)" class="btn-secondary">Semana Siguiente ►</button>
+        </div>
+
+        <div id="calendar-container"></div>
+    </main>
+
+    <!-- Modal Formulario -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 15px;">Agregar Nueva Actividad</h3>
+            <form id="event-form" onsubmit="saveEvent(event)">
+                <div class="form-group">
+                    <label>Título de la Actividad</label>
+                    <input type="text" id="title" required placeholder="Ej: Ensayo General">
+                </div>
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label>Tema / Categoría</label>
+                    <select id="category">
+                        <option value="eventos">🔴 Eventos 3er Trimestre</option>
+                        <option value="tareas">🟠 Tareas Especiales</option>
+                        <option value="pruebas">🔵 Pruebas Finales (7°-III°)</option>
+                        <option value="iv">🟢 Plan Finalización IV°</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeModal()" class="btn-secondary">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const rawEvents = [
+            // OCTUBRE - EVENTOS Y TAREAS
+            { id: '1', date: '2026-10-21', title: 'Crecer cantando segunda etapa', cat: 'eventos' },
+            { id: '2', date: '2026-10-23', title: 'Profesores finalizan entrega de temarios de pruebas finales de 7° a III° a sus coordinadores', cat: 'tareas' },
+            { id: '3', date: '2026-10-28', title: 'SIMCE 6° Básico', cat: 'eventos' },
+            { id: '4', date: '2026-10-29', title: 'SIMCE 6° Básico', cat: 'eventos' },
+            { id: '5', date: '2026-10-30', title: 'Coordinadores de área finalizan revisión de temarios de pruebas finales 1° a III°', cat: 'eventos' },
+            { id: '6', date: '2026-10-30', title: 'Coordinadores de área finalizan revisión de temarios de las pruebas finales de 7° a III°', cat: 'tareas' },
+
+            // OCTUBRE - PRUEBAS FINALES IV° MEDIO
+            { id: 'p4-1', date: '2026-10-21', title: 'Pruebas finales IV° Medio (Inicio)', cat: 'eventos' },
+            { id: 'p4-2', date: '2026-10-22', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
+            { id: 'p4-3', date: '2026-10-23', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
+            { id: 'p4-4', date: '2026-10-26', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
+            { id: 'p4-5', date: '2026-10-27', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
+            { id: 'p4-6', date: '2026-10-28', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
+            { id: 'p4-7', date: '2026-10-29', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
+            { id: 'p4-8', date: '2026-10-30', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
+
+            // NOVIEMBRE - EVENTOS Y TAREAS
+            { id: '7', date: '2026-11-02', title: 'Días de la Ciencia (Lunes 2 al viernes 6 de noviembre)', cat: 'eventos' },
+            { id: 'p4-9', date: '2026-11-02', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
+            { id: '8', date: '2026-11-03', title: 'Feria científica: 6° a 8°', cat: 'eventos' },
+            { id: '9', date: '2026-11-03', title: 'Entrega de temarios de pruebas finales de 1° a III° a Coordinación Académica', cat: 'eventos' },
+            { id: 'p4-10', date: '2026-11-03', title: 'Pruebas finales IV° Medio (Término)', cat: 'eventos' },
+            { id: '10', date: '2026-11-03', title: 'Notas puestas IV° Medio', cat: 'tareas' },
+            { id: '11', date: '2026-11-03', title: 'Entrega de temarios de pruebas de 7° a III° a coordinación académica', cat: 'tareas' },
+            { id: '12', date: '2026-11-04', title: 'Concurso de Ciencias: I° a III°', cat: 'eventos' },
+            { id: '13', date: '2026-11-04', title: 'SIMCE 4° Básico', cat: 'eventos' },
+            { id: '14', date: '2026-11-04', title: 'Periodo especial de IV° (4 al 12 de noviembre)', cat: 'eventos' },
+            { id: '15', date: '2026-11-05', title: 'Feria científica: 1°, 3° y 5°', cat: 'eventos' },
+            { id: '16', date: '2026-11-05', title: 'SIMCE 4° Básico', cat: 'eventos' },
+            { id: '17', date: '2026-11-06', title: 'Feria científica: PK, K, 2° y 4°', cat: 'eventos' },
+            { id: '18', date: '2026-11-09', title: 'Prueba DIA Cierre', cat: 'eventos' },
+            { id: '19', date: '2026-11-09', title: 'Durante la semana: examen oral de inglés 6°, 7°, 8° y II°', cat: 'eventos' },
+            { id: '20', date: '2026-11-09', title: 'Inicio de repaso de pruebas finales', cat: 'eventos' },
+            { id: '21', date: '2026-11-10', title: 'Entrega de temarios de pruebas finales a alumnos 1° a III°', cat: 'eventos' },
+            { id: '22', date: '2026-11-11', title: 'SIMCE II° Medio', cat: 'eventos' },
+            { id: '23', date: '2026-11-12', title: 'SIMCE II° Medio', cat: 'eventos' },
+            { id: '24', date: '2026-11-12', title: 'Consejo de premiación de IV° Medio (16:20 hrs.)', cat: 'eventos' },
+            { id: '25', date: '2026-11-16', title: 'Última fecha para inicio de repasos de pruebas finales', cat: 'eventos' },
+            { id: '27', date: '2026-11-19', title: 'Reunión General de Profesores (16:20 hrs.)', cat: 'eventos' },
+            { id: '28', date: '2026-11-19', title: 'Graduación de IV° Medio (19:00 hrs.)', cat: 'eventos' },
+            { id: '29', date: '2026-11-20', title: 'Cierre de actas IV° Medio. Notas puestas del tercer trimestre hasta III° Medio (sin prueba final)', cat: 'eventos' },
+            { id: '30', date: '2026-11-23', title: 'Inicio Pruebas Finales 7° a III° Medio. Voluntariado de 7° a III° se pueden quedar en la tarde a estudiar con turno de profesores', cat: 'eventos' },
+            { id: '31', date: '2026-11-23', title: 'Entrega de listado de alumnos citados al cuarto trimestre de lenguaje y matemática', cat: 'tareas' },
+            { id: '32', date: '2026-11-26', title: 'Reunión de Ciclo (16:20 hrs.)', cat: 'eventos' },
+            { id: '33', date: '2026-11-27', title: 'Consejo Escolar (08:00 hrs.)', cat: 'eventos' },
+
+            // PLAN DE FINALIZACIÓN DE IV° MEDIO
+            { id: 'iv-4a', date: '2026-11-04', title: 'IV° (Electivo Física): Prepara y realiza su intervención (08:30 - 10:00). Ordenan al finalizar.', cat: 'iv' },
+            { id: 'iv-4b', date: '2026-11-04', title: 'IV° (No electivo Física): Público en Concurso de Ciencias (08:30 - 11:30).', cat: 'iv' },
+            { id: 'iv-4c', date: '2026-11-04', title: '🔔 Recreo (11:30 - 11:45)', cat: 'iv' },
+            { id: 'iv-4d', date: '2026-11-04', title: 'IV° (Todos): Estudio personal PAES en cada sala (11:45 - 13:15).', cat: 'iv' },
+
+            { id: 'iv-5a', date: '2026-11-05', title: 'IV° (Inscritos M2): Contestan ensayo M2 en sala IV°B (08:30 - 11:15). 🔔 Recreo (11:15 - 11:45).', cat: 'iv' },
+            { id: 'iv-5b', date: '2026-11-05', title: 'IV° (No inscritos M2): Estudio PAES en IV°A (08:30 - 09:50). 🔔 Recreo (09:50 - 10:05). Estudio PAES en IV°A (10:05 - 11:35). 🔔 Recreo (11:35 - 11:45).', cat: 'iv' },
+            { id: 'iv-5c', date: '2026-11-05', title: 'IV° (Todos): Estudio personal PAES en cada sala (11:45 - 13:15).', cat: 'iv' },
+
+            { id: 'iv-6a', date: '2026-11-06', title: 'IV° (Todos): Ensayo Competencia Lectora (08:30 - 11:15).', cat: 'iv' },
+            { id: 'iv-6b', date: '2026-11-06', title: '🔔 Recreo (11:15 - 11:45)', cat: 'iv' },
+            { id: 'iv-6c', date: '2026-11-06', title: 'IV° (Todos): Estudio personal PAES en cada sala (11:45 - 13:15).', cat: 'iv' },
+
+            { id: 'iv-9a', date: '2026-11-09', title: 'IV° (Inscritos M2): Taller M2 con Prof. Pedro Ibarra en IV°A (08:30 - 09:50).', cat: 'iv' },
+            { id: 'iv-9b', date: '2026-11-09', title: 'IV° (No inscritos M2): Estudio personal en IV°B (08:30 - 09:50).', cat: 'iv' },
+            { id: 'iv-9c', date: '2026-11-09', title: '🔔 Recreo (09:50 - 10:30)', cat: 'iv' },
+            { id: 'iv-9d', date: '2026-11-09', title: 'IV° (Todos A y B): Rinden Ensayo M1 en cada sala (10:30 - 13:10).', cat: 'iv' },
+
+            { id: 'iv-10a', date: '2026-11-10', title: 'IV° (Inscritos PAES Historia): Contestan ensayo Historia en comedor (08:30 - 11:00). 🔔 Recreo (11:00 - 11:45).', cat: 'iv' },
+            { id: 'iv-10b', date: '2026-11-10', title: 'IV° (No inscritos Historia): Estudio PAES en IV°A (08:30 - 09:50). 🔔 Recreo (09:50 - 10:05). Estudio PAES en IV°A (10:05 - 11:35).', cat: 'iv' },
+            { id: 'iv-10c', date: '2026-11-10', title: 'IV° (Todos): Estudio personal PAES en cada sala (11:45 - 13:15).', cat: 'iv' },
+
+            { id: 'iv-11a', date: '2026-11-11', title: 'IV° (Inscritos PAES Ciencias): Contestan ensayo Ciencias en comedor (08:30 - 11:20). 🔔 Recreo (11:20 - 11:30).', cat: 'iv' },
+            { id: 'iv-11b', date: '2026-11-11', title: 'IV° (No inscritos Ciencias): Estudio PAES en IV°B (08:30 - 09:50). 🔔 Recreo (09:50 - 10:05). Estudio PAES en IV°B (10:05 - 11:35). 🔔 Recreo (11:20 - 11:30).', cat: 'iv' },
+            { id: 'iv-11c', date: '2026-11-11', title: 'IV° (Todos): Retiro Espiritual con profesores jefes (11:30 - 16:00).', cat: 'iv' },
+
+            { id: 'iv-12a', date: '2026-11-12', title: 'IV° (Todos): Corrigen ensayo M1 en sala (Prof. Pedro Ibarra en IV°A / Miss Alejandra Gómez en IV°B) (08:30 - 09:50).', cat: 'iv' },
+            { id: 'iv-12b', date: '2026-11-12', title: '🔔 Recreo (09:50 - 10:05)', cat: 'iv' },
+            { id: 'iv-12c', date: '2026-11-12', title: 'IV° (Todos): Estudio personal PAES en cada sala (10:05 - 11:35).', cat: 'iv' },
+            { id: 'iv-12d', date: '2026-11-12', title: '🔔 Recreo (11:35 - 11:45)', cat: 'iv' },
+            { id: 'iv-12e', date: '2026-11-12', title: 'IV° (Todos): Estudio personal PAES en cada sala (11:45 - 13:15).', cat: 'iv' },
+
+            { id: 'iv-13a', date: '2026-11-13', title: 'IV° (Todos A y B): Rinden ensayo Competencia Lectora (08:30 - 11:10).', cat: 'iv' },
+            { id: 'iv-13b', date: '2026-11-13', title: '🔔 Recreo (11:10 - 11:45)', cat: 'iv' },
+            { id: 'iv-13c', date: '2026-11-13', title: 'IV° (Todos): Limpieza de salas y preparación de la ceremonia de graduación (11:45 - 13:15).', cat: 'iv' },
+
+            { id: 'iv-16a', date: '2026-11-16', title: 'IV° (Todos A y B): Rinden ensayo M1 (08:30 - 11:10).', cat: 'iv' },
+            { id: 'iv-16b', date: '2026-11-16', title: '🔔 Recreo (11:10 - 11:45)', cat: 'iv' },
+            { id: 'iv-16c', date: '2026-11-16', title: 'IV° (Todos): Limpieza de salas y preparación de la ceremonia de graduación (11:45 - 13:15).', cat: 'iv' },
+
+            { id: 'iv-17', date: '2026-11-17', title: 'Último día de IV° Medio y despedida del colegio', cat: 'iv' },
+            { id: 'iv-18', date: '2026-11-18', title: 'IV°: Almuerzo con profesores (14:30 hrs.)', cat: 'iv' },
+            { id: 'iv-19', date: '2026-11-19', title: 'IV°: Ceremonia de Graduación (19:00 hrs.)', cat: 'iv' },
+
+            // PRUEBAS FINALES 7° A III°
+            { id: '46a', date: '2026-11-23', title: 'Prueba: DIA Cierre (7° a II°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
+            { id: '46b', date: '2026-11-23', title: 'Prueba: Electivo Filosofía y Límites (III°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
+
+            { id: '47a', date: '2026-11-24', title: 'Prueba: Religión (7° a II°) (⏰ 10:05 - 11:35)', cat: 'pruebas' },
+            { id: '47b', date: '2026-11-24', title: 'Prueba: Filosofía Común (III°) (⏰ 10:05 - 11:35)', cat: 'pruebas' },
+
+            { id: '48a', date: '2026-11-25', title: 'Prueba: Biología (7° a II°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
+            { id: '48b', date: '2026-11-25', title: 'Prueba: Comp. Histórica o Bio. Celular (III°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
+
+            { id: '49', date: '2026-11-26', title: 'Prueba: Lenguaje (7° a III°) (⏰ 10:05 - 11:35)', cat: 'pruebas' },
+
+            { id: '50a', date: '2026-11-27', title: 'Prueba: Física (II°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
+            { id: '50b', date: '2026-11-27', title: 'Prueba: Ciencias para la Ciudadanía (III°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
+
+            { id: '51', date: '2026-11-30', title: 'Prueba: Inglés (7° a III°) (⏰ 10:05 - 11:35)', cat: 'pruebas' },
+
+            { id: '52a', date: '2026-12-01', title: 'Prueba: Química (7° a II°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
+            { id: '52b', date: '2026-12-01', title: 'Prueba: Química o Taller Literatura (III°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
+
+            { id: '53', date: '2026-12-02', title: 'Prueba: Matemática (7° a III°) (⏰ 10:05 - 11:45)', cat: 'pruebas' },
+
+            { id: '54a', date: '2026-12-03', title: 'Prueba: Historia (7° a II°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
+            { id: '54b', date: '2026-12-03', title: 'Prueba: Ed. Ciudadana (III°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
+
+            // DICIEMBRE Y ENERO
+            { id: '55', date: '2026-12-03', title: 'Últimas pruebas finales', cat: 'eventos' },
+            { id: '56', date: '2026-12-04', title: 'Notas puestas en Napsis', cat: 'eventos' },
+            { id: '57', date: '2026-12-09', title: 'Comisión de evaluación de Educación Media (08:00 hrs. a 11:00 hrs.)', cat: 'eventos' },
+            { id: '58', date: '2026-12-10', title: 'Concierto de fin de año', cat: 'eventos' },
+            { id: '59', date: '2026-12-11', title: 'Acto Final de 7° a III° (11:00 hrs.)', cat: 'eventos' },
+            { id: '60', date: '2026-12-22', title: 'Misa de cierre escolar para profesores. Entrega planificaciones (12:00 hrs.)', cat: 'eventos' },
+            { id: '61', date: '2026-12-23', title: 'Paseo de Navidad', cat: 'eventos' },
+            { id: '62', date: '2026-12-28', title: '4° Trimestre (28 dic a 30 ene)', cat: 'eventos' },
+            { id: '63', date: '2027-01-04', title: '4° Trimestre (4 al 8 ene)', cat: 'eventos' },
+            { id: '64', date: '2027-01-11', title: 'Reunión de calendario 2027 Coordinadores (09:00 a 13:00 hrs.)', cat: 'eventos' },
+            { id: '65', date: '2027-01-12', title: 'Reunión de calendario 2027 Coordinadores (09:00 a 13:00 hrs.)', cat: 'eventos' },
+            { id: '66', date: '2027-01-13', title: 'Finalización de coordinadores', cat: 'eventos' }
+        ];
+
+        // Carga directa de rawEvents sin localStorage para garantizar visibilidad al compartir
+        let events = [...rawEvents];
+        let currentViewMode = 'month';
+        let currentWeekStartDate = new Date(2026, 9, 19);
+
+        const months = [
+            { name: 'OCTUBRE 2026', year: 2026, month: 9, days: 31, offset: 3 },
+            { name: 'NOVIEMBRE 2026', year: 2026, month: 10, days: 30, offset: 6 },
+            { name: 'DICIEMBRE 2026', year: 2026, month: 11, days: 31, offset: 1 },
+            { name: 'ENERO 2027', year: 2027, month: 0, days: 31, offset: 4 }
+        ];
+
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            document.getElementById('btn-view-month').classList.toggle('active', mode === 'month');
+            document.getElementById('btn-view-week').classList.toggle('active', mode === 'week');
+            document.getElementById('week-nav').style.display = mode === 'week' ? 'flex' : 'none';
+            renderCalendar();
+        }
+
+        function toggleWeekends() {
+            document.body.classList.toggle('hide-weekends');
+            const btn = document.getElementById('toggle-weekend-btn');
+            if (document.body.classList.contains('hide-weekends')) {
+                btn.textContent = '👁️ Mostrar Sáb/Dom';
+                btn.classList.add('active');
+            } else {
+                btn.textContent = '🚫 Ocultar Sáb/Dom';
+                btn.classList.remove('active');
+            }
+        }
+
+        function changeWeek(direction) {
+            currentWeekStartDate.setDate(currentWeekStartDate.getDate() + (direction * 7));
+            renderCalendar();
+        }
+
+        function formatDateISO(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function renderCalendar() {
+            const container = document.getElementById('calendar-container');
+            container.innerHTML = '';
+
+            const activeCats = Array.from(document.querySelectorAll('.filters-group input:checked')).map(cb => cb.value);
+
+            if (currentViewMode === 'month') {
+                months.forEach(m => {
+                    let html = `
+                    <div class="month-card">
+                        <div class="month-header">${m.name}</div>
+                        <div class="grid-header">
+                            <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div>
+                            <div class="weekday-sat">Sáb</div><div class="weekday-sun">Dom</div>
+                        </div>
+                        <div class="calendar-grid">
+                    `;
+
+                    for (let i = 0; i < m.offset; i++) {
+                        const dayOfWeek = i % 7;
+                        const weekendClass = dayOfWeek === 5 ? 'day-sat' : (dayOfWeek === 6 ? 'day-sun' : '');
+                        html += `<div class="day-cell empty ${weekendClass}"></div>`;
+                    }
+
+                    for (let d = 1; d <= m.days; d++) {
+                        const dateStr = `${m.year}-${String(m.month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                        const dayEvents = events.filter(e => e.date === dateStr && activeCats.includes(e.cat));
+                        
+                        const dayOfWeek = (m.offset + d - 1) % 7;
+                        const weekendClass = dayOfWeek === 5 ? 'day-sat' : (dayOfWeek === 6 ? 'day-sun' : '');
+
+                        html += `
+                        <div class="day-cell ${weekendClass}">
+                            <div class="day-num">
+                                <span>${d}</span>
+                                <button class="add-btn no-print" onclick="openModal('${dateStr}')" title="Agregar actividad">+</button>
+                            </div>
+                            <div class="events-list">
+                        `;
+
+                        dayEvents.forEach(e => {
+                            html += `
+                            <div class="event-tag tag-${e.cat}">
+                                ${e.title}
+                                <button class="del-btn no-print" onclick="deleteEvent('${e.id}')" title="Eliminar actividad">✕</button>
+                            </div>
+                            `;
+                        });
+
+                        html += `</div></div>`;
+                    }
+
+                    const total = m.offset + m.days;
+                    const remain = (7 - (total % 7)) % 7;
+                    for (let i = 0; i < remain; i++) {
+                        const dayOfWeek = (total + i) % 7;
+                        const weekendClass = dayOfWeek === 5 ? 'day-sat' : (dayOfWeek === 6 ? 'day-sun' : '');
+                        html += `<div class="day-cell empty ${weekendClass}"></div>`;
+                    }
+
+                    html += `</div></div>`;
+                    container.innerHTML += html;
+                });
+            } else {
+                const weekDays = [];
+                const start = new Date(currentWeekStartDate);
+                for (let i = 0; i < 7; i++) {
+                    const day = new Date(start);
+                    day.setDate(start.getDate() + i);
+                    weekDays.push(day);
+                }
+
+                const end = weekDays[6];
+                document.getElementById('week-title').textContent = 
+                    `Semana del ${weekDays[0].getDate()} de ${weekDays[0].toLocaleString('es', {month:'long'})} al ${end.getDate()} de ${end.toLocaleString('es', {month:'long'})} (${weekDays[0].getFullYear()})`;
+
+                let html = `
+                <div class="month-card">
+                    <div class="month-header">VISTA SEMANAL</div>
+                    <div class="grid-header">
+                        <div>Lun (${weekDays[0].getDate()})</div>
+                        <div>Mar (${weekDays[1].getDate()})</div>
+                        <div>Mié (${weekDays[2].getDate()})</div>
+                        <div>Jue (${weekDays[3].getDate()})</div>
+                        <div>Vie (${weekDays[4].getDate()})</div>
+                        <div class="weekday-sat">Sáb (${weekDays[5].getDate()})</div>
+                        <div class="weekday-sun">Dom (${weekDays[6].getDate()})</div>
+                    </div>
+                    <div class="calendar-grid">
+                `;
+
+                weekDays.forEach((dayObj, index) => {
+                    const dateStr = formatDateISO(dayObj);
+                    const dayEvents = events.filter(e => e.date === dateStr && activeCats.includes(e.cat));
+                    const weekendClass = index === 5 ? 'day-sat' : (index === 6 ? 'day-sun' : '');
+
+                    html += `
+                    <div class="day-cell ${weekendClass}" style="min-height: 280px;">
+                        <div class="day-num">
+                            <span>${dayObj.getDate()} / ${dayObj.getMonth() + 1}</span>
+                            <button class="add-btn no-print" onclick="openModal('${dateStr}')" title="Agregar actividad">+</button>
+                        </div>
+                        <div class="events-list">
+                    `;
+
+                    dayEvents.forEach(e => {
+                        html += `
+                        <div class="event-tag tag-${e.cat}">
+                            ${e.title}
+                            <button class="del-btn no-print" onclick="deleteEvent('${e.id}')" title="Eliminar actividad">✕</button>
+                        </div>
+                        `;
+                    });
+
+                    html += `</div></div>`;
+                });
+
+                html += `</div></div>`;
+                container.innerHTML = html;
+            }
+        }
+
+        function openModal(date = '') {
+            document.getElementById('date').value = date;
+            document.getElementById('title').value = '';
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function saveEvent(e) {
+            e.preventDefault();
+            events.push({
+                id: Date.now().toString(),
+                title: document.getElementById('title').value,
+                date: document.getElementById('date').value,
+                cat: document.getElementById('category').value
+            });
+            renderCalendar();
+            closeModal();
+        }
+
+        function deleteEvent(id) {
+            events = events.filter(e => e.id !== id);
+            renderCalendar();
+        }
+
+        renderCalendar();
+    </script>
+</body>
+</html>
