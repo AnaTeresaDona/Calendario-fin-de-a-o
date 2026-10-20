@@ -66,7 +66,7 @@
 
         .events-list { display: flex; flex-direction: column; gap: 4px; }
         
-        /* Eventos y Botón Eliminar Permanente */
+        /* Eventos y Botón Eliminar */
         .event-tag { padding: 4px 22px 4px 6px; border-radius: 4px; font-size: 10.5px; line-height: 1.25; border-left: 3px solid; position: relative; word-wrap: break-word; }
         .del-btn { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.12); color: #0f172a; border: none; border-radius: 50%; width: 15px; height: 15px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .del-btn:hover { background: #ef4444; color: white; }
@@ -99,7 +99,7 @@
         <div class="header-container">
             <div>
                 <h1 style="font-size: 18px; font-weight: 700;">📅 Calendario Escolar Interactivo</h1>
-                <p style="font-size: 11px; color: #94a3b8;">Planificación oficial de fin de año con horarios detallados</p>
+                <p style="font-size: 11px; color: #94a3b8;">Planificación oficial de fin de año (Definitiva)</p>
             </div>
             <div class="btn-group">
                 <div class="view-btn-group">
@@ -174,25 +174,23 @@
 
     <script>
         const rawEvents = [
-            // OCTUBRE - EVENTOS Y TAREAS
+            // OCTUBRE 2026
             { id: '1', date: '2026-10-21', title: 'Crecer cantando segunda etapa', cat: 'eventos' },
             { id: '2', date: '2026-10-23', title: 'Profesores finalizan entrega de temarios de pruebas finales de 7° a III° a sus coordinadores', cat: 'tareas' },
-            { id: '3', date: '2026-10-28', title: 'SIMCE 6° Básico', cat: 'eventos' },
-            { id: '4', date: '2026-10-29', title: 'SIMCE 6° Básico', cat: 'eventos' },
-            { id: '5', date: '2026-10-30', title: 'Coordinadores de área finalizan revisión de temarios de pruebas finales 1° a III°', cat: 'eventos' },
-            { id: '6', date: '2026-10-30', title: 'Coordinadores de área finalizan revisión de temarios de las pruebas finales de 7° a III°', cat: 'tareas' },
-
-            // OCTUBRE - PRUEBAS FINALES IV° MEDIO
             { id: 'p4-1', date: '2026-10-21', title: 'Pruebas finales IV° Medio (Inicio)', cat: 'eventos' },
             { id: 'p4-2', date: '2026-10-22', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
             { id: 'p4-3', date: '2026-10-23', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
             { id: 'p4-4', date: '2026-10-26', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
             { id: 'p4-5', date: '2026-10-27', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
             { id: 'p4-6', date: '2026-10-28', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
+            { id: '3', date: '2026-10-28', title: 'SIMCE 6° Básico', cat: 'eventos' },
             { id: 'p4-7', date: '2026-10-29', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
+            { id: '4', date: '2026-10-29', title: 'SIMCE 6° Básico', cat: 'eventos' },
             { id: 'p4-8', date: '2026-10-30', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
+            { id: '5', date: '2026-10-30', title: 'Coordinadores de área finalizan revisión de temarios de pruebas finales 1° a III°', cat: 'eventos' },
+            { id: '6', date: '2026-10-30', title: 'Coordinadores de área finalizan revisión de temarios de las pruebas finales de 7° a III°', cat: 'tareas' },
 
-            // NOVIEMBRE - EVENTOS Y TAREAS
+            // NOVIEMBRE 2026 - EVENTOS Y TAREAS
             { id: '7', date: '2026-11-02', title: 'Días de la Ciencia (Lunes 2 al viernes 6 de noviembre)', cat: 'eventos' },
             { id: 'p4-9', date: '2026-11-02', title: 'Pruebas finales IV° Medio', cat: 'eventos' },
             { id: '8', date: '2026-11-03', title: 'Feria científica: 6° a 8°', cat: 'eventos' },
@@ -213,13 +211,14 @@
             { id: '22', date: '2026-11-11', title: 'SIMCE II° Medio', cat: 'eventos' },
             { id: '23', date: '2026-11-12', title: 'SIMCE II° Medio', cat: 'eventos' },
             { id: '24', date: '2026-11-12', title: 'Consejo de premiación de IV° Medio (16:20 hrs.)', cat: 'eventos' },
+            { id: 'cierre-actas-iv', date: '2026-11-13', title: 'Cierre de actas de IV° Medio todas las notas puestas en libros y Napsis', cat: 'tareas' },
             { id: '25', date: '2026-11-16', title: 'Última fecha para inicio de repasos de pruebas finales', cat: 'eventos' },
             { id: '27', date: '2026-11-19', title: 'Reunión General de Profesores (16:20 hrs.)', cat: 'eventos' },
             { id: '28', date: '2026-11-19', title: 'Graduación de IV° Medio (19:00 hrs.)', cat: 'eventos' },
-            { id: '29', date: '2026-11-20', title: 'Cierre de actas IV° Medio. Notas puestas del tercer trimestre hasta III° Medio (sin prueba final)', cat: 'eventos' },
+            { id: '29', date: '2026-11-20', title: 'Notas puestas del tercer trimestre 7° a III° (excepto prueba final)', cat: 'eventos' },
             { id: '30', date: '2026-11-23', title: 'Inicio Pruebas Finales 7° a III° Medio. Voluntariado de 7° a III° se pueden quedar en la tarde a estudiar con turno de profesores', cat: 'eventos' },
             { id: '31', date: '2026-11-23', title: 'Entrega de listado de alumnos citados al cuarto trimestre de lenguaje y matemática', cat: 'tareas' },
-            { id: '32', date: '2026-11-26', title: 'Reunión de Ciclo (16:20 hrs.)', cat: 'eventos' },
+            { id: '32', date: '2026-11-25', title: 'Reunión de Ciclo (16:20 hrs.)', cat: 'eventos' },
             { id: '33', date: '2026-11-27', title: 'Consejo Escolar (08:00 hrs.)', cat: 'eventos' },
 
             // PLAN DE FINALIZACIÓN DE IV° MEDIO
@@ -263,8 +262,19 @@
             { id: 'iv-16b', date: '2026-11-16', title: '🔔 Recreo (11:10 - 11:45)', cat: 'iv' },
             { id: 'iv-16c', date: '2026-11-16', title: 'IV° (Todos): Limpieza de salas y preparación de la ceremonia de graduación (11:45 - 13:15).', cat: 'iv' },
 
-            { id: 'iv-17', date: '2026-11-17', title: 'Último día de IV° Medio y despedida del colegio', cat: 'iv' },
-            { id: 'iv-18', date: '2026-11-18', title: 'IV°: Almuerzo con profesores (14:30 hrs.)', cat: 'iv' },
+            // DETALLE DE DESPEDIDA IV° MEDIO - MARTES 17 NOV
+            { id: 'iv-17a', date: '2026-11-17', title: '🎓 Último día de IV° Medio y despedida del colegio', cat: 'iv' },
+            { id: 'iv-17b', date: '2026-11-17', title: '🥞 08:30 - 09:30: Desayuno de III° a IV°', cat: 'iv' },
+            { id: 'iv-17c', date: '2026-11-17', title: '⛪ 10:00: Misa de IV° con apoderados', cat: 'iv' },
+            { id: 'iv-17d', date: '2026-11-17', title: '🇨🇱 11:30: Acto cívico en Media con apoderados y regalo musical', cat: 'iv' },
+            { id: 'iv-17e', date: '2026-11-17', title: '👋 12:45: Desfile de despedida saliendo por básica y preescolar', cat: 'iv' },
+            { id: 'iv-17f', date: '2026-11-17', title: '🚪 13:00: Salida de IV° Medio con apoderados', cat: 'iv' },
+
+            // MIÉRCOLES 18 NOV
+            { id: 'iv-18a', date: '2026-11-18', title: '8°B sale a exposición del cobre al colegio San Esteban (08:00 - 09:00)', cat: 'eventos' },
+            { id: 'iv-18b', date: '2026-11-18', title: 'Salida de alumnos de E. Media (13:15 hrs - sin almuerzo)', cat: 'eventos' },
+            { id: 'iv-18c', date: '2026-11-18', title: 'IV°: Almuerzo con profesores (14:30 hrs.)', cat: 'iv' },
+
             { id: 'iv-19', date: '2026-11-19', title: 'IV°: Ceremonia de Graduación (19:00 hrs.)', cat: 'iv' },
 
             // PRUEBAS FINALES 7° A III°
@@ -292,22 +302,26 @@
             { id: '54a', date: '2026-12-03', title: 'Prueba: Historia (7° a II°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
             { id: '54b', date: '2026-12-03', title: 'Prueba: Ed. Ciudadana (III°) (⏰ 08:20 - 09:50)', cat: 'pruebas' },
 
-            // DICIEMBRE Y ENERO
+            // DICIEMBRE 2026 Y ENERO 2027
             { id: '55', date: '2026-12-03', title: 'Últimas pruebas finales', cat: 'eventos' },
+            { id: '58', date: '2026-12-03', title: '🎼 18:45: Concierto de fin de año', cat: 'eventos' },
             { id: '56', date: '2026-12-04', title: 'Notas puestas en Napsis', cat: 'eventos' },
+            { id: 'feriado-1', date: '2026-12-07', title: '🚫 INTERFERIADO', cat: 'eventos' },
+            { id: 'feriado-2', date: '2026-12-08', title: '⛪ FERIADO RELIGIOSO: Día de la Inmaculada Concepción', cat: 'eventos' },
             { id: '57', date: '2026-12-09', title: 'Comisión de evaluación de Educación Media (08:00 hrs. a 11:00 hrs.)', cat: 'eventos' },
-            { id: '58', date: '2026-12-10', title: 'Concierto de fin de año', cat: 'eventos' },
             { id: '59', date: '2026-12-11', title: 'Acto Final de 7° a III° (11:00 hrs.)', cat: 'eventos' },
+            { id: 'paseo-profes', date: '2026-12-14', title: 'Paseo de profesores', cat: 'eventos' },
+            { id: 'matriculas', date: '2026-12-15', title: 'Matrícula (08:00 a 13:00 hrs.)', cat: 'eventos' },
             { id: '60', date: '2026-12-22', title: 'Misa de cierre escolar para profesores. Entrega planificaciones (12:00 hrs.)', cat: 'eventos' },
             { id: '61', date: '2026-12-23', title: 'Paseo de Navidad', cat: 'eventos' },
             { id: '62', date: '2026-12-28', title: '4° Trimestre (28 dic a 30 ene)', cat: 'eventos' },
             { id: '63', date: '2027-01-04', title: '4° Trimestre (4 al 8 ene)', cat: 'eventos' },
             { id: '64', date: '2027-01-11', title: 'Reunión de calendario 2027 Coordinadores (09:00 a 13:00 hrs.)', cat: 'eventos' },
             { id: '65', date: '2027-01-12', title: 'Reunión de calendario 2027 Coordinadores (09:00 a 13:00 hrs.)', cat: 'eventos' },
-            { id: '66', date: '2027-01-13', title: 'Finalización de coordinadores', cat: 'eventos' }
+            { id: '66', date: '2027-01-13', title: 'Finalización de coordinadores', cat: 'eventos' },
+            { id: 'profes-fin', date: '2027-01-14', title: '🏁 Último día de trabajo de profesores', cat: 'eventos' }
         ];
 
-        // Carga directa de rawEvents sin localStorage para garantizar visibilidad al compartir
         let events = [...rawEvents];
         let currentViewMode = 'month';
         let currentWeekStartDate = new Date(2026, 9, 19);
